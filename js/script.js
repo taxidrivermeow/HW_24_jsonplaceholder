@@ -1,6 +1,7 @@
 (()=>{
     const url = 'https://jsonplaceholder.typicode.com';
     const $content = $('#content');
+    const $modal = $('#modal');
 
     const getUserById = id => {
         let user = {};
@@ -213,7 +214,7 @@
             const photoUrl = photo.thumbnailUrl.split('/');
             if (photoUrl[photoUrl.length - 1].length === 6) {
                 albumDiv.append(`
-                    <img src="${photo.thumbnailUrl}">
+                    <a href="${photo.url}" class="show-photo-big"><img src="${photo.thumbnailUrl}" class="show-photo-big"></a>
                 `);
             }
         });
@@ -222,7 +223,10 @@
     const userAlbumsRender = (user, allAlbums) => {
         $content.append(`
                 <div class="card userAlbumCard" id="userAlbumsCard-${user.id}">
-                    <h2><a data-user-id="${user.id}" class="user-info" href="#">${user.name}'s</a> albums</h2>
+                    <h2>
+                        <a data-user-id="${user.id}" class="user-info" href="#">${user.name}'s</a> albums | 
+                        <a data-user-id="${user.id}" href="#" class="posts">Posts</a>
+                    </h2>
                 </div>
                 `);
         allAlbums.forEach(album => {
@@ -240,7 +244,10 @@
     const userPostsRender = (user, posts) => {
         $content.append(`
                 <div class="card userPostsCard" id="userPostsCard-${user.id}">
-                    <h2><a data-user-id="${user.id}" class="user-info" href="#">${user.name}'s</a> posts</h2>
+                    <h2>
+                        <a data-user-id="${user.id}" class="user-info" href="#">${user.name}'s</a> posts | 
+                        <a data-user-id="${user.id}" href="#" class="albums">Albums</a>
+                    </h2>
                 </div>
                 `);
 
@@ -262,7 +269,10 @@
     const userInfoRender = user => {
         $content.append(`
             <div class="card userInfo">
-                <h2>${user.name} | <a data-user-id="${user.id}" href="#" class="posts">Posts</a></h2>
+                <h2>${user.name} | 
+                    <a data-user-id="${user.id}" href="#" class="posts">Posts</a> | 
+                    <a data-user-id="${user.id}" href="#" class="albums">Albums</a>
+                </h2>
                 <h3>Username: ${user.username}</h3>
                 <h3>Phone: <a href="tel:${user.phone}">${user.phone}</a></h3>
                 <h3>Email: <a href="mailto:${user.email}">${user.email}</a></h3>
@@ -272,8 +282,7 @@
                 <h4>${user.company.bs}</h4>
                 <h2>Address</h2>
                 <h3>City: ${user.address.city}</h3>
-                <h3>Street: ${user.address.street}</h3>
-                <h3>Suite: ${user.address.suite}</h3>
+                <h3>Street: ${user.address.street}, ${user.address.suite}</h3>
                 <h3>Zipcode: ${user.address.zipcode}</h3>
             </div>
         `);
@@ -290,7 +299,10 @@
                     <h4>Email: <a href="mailto:${user.email}">${user.email}</a> </h4>
                     <h4>Phone: ${user.phone}</h4>
                     <h4>Website: ${user.website}</h4>
-                    <h4><a data-user-id="${user.id}" href="#" class="posts">Posts</a></h4>
+                    <h4>
+                        <a data-user-id="${user.id}" href="#" class="posts">Posts</a> | 
+                        <a data-user-id="${user.id}" href="#" class="albums">Albums</a>
+                    </h4>
                 </div>
             `);
         });
@@ -367,6 +379,27 @@
             const photos = getPhotosByAlbumId(albumId);
             $(`[data-photos-album-id=${albumId}]`).toggleClass('hide');
             albumPhotosRender(albumId, photos);
+        }
+
+        if (e.target.classList.contains('albums')) {
+            e.preventDefault();
+            cleanContent();
+            const userId = e.target.dataset.userId;
+            const user = getUserById(userId);
+            const album = getAlbumsByUserId(userId);
+            userAlbumsRender(user, album);
+        }
+
+        if (e.target.classList.contains('show-photo-big')) {
+            e.preventDefault();
+            $modal[0].classList.remove('hide');
+            $('#imgFull').attr('src', e.target.parentElement.href);
+        }
+    });
+
+    $('body').on('click', e => {
+        if (e.target.classList.contains('img-full')) {
+            $modal[0].classList.add('hide');
         }
     });
 

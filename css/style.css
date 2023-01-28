@@ -186,13 +186,26 @@ ul
     background-color: rgb(197, 226, 196);
 }
 
-.hide {
-    display: none;
-}
-
 .hr-light {
     width: 80%;
     color: lightgray;
     margin: auto;
     border: solid 1px lightgray;
+}
+
+.modal {
+    display: flex;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, .8);
+    align-items: center;
+    justify-content: center;
+
+}
+
+.hide {
+    display: none;
 }
