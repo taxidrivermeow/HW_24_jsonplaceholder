@@ -20,6 +20,60 @@
         return user;
     };
 
+    const getAllAlbums = () => {
+        let albums = {};
+        const currentUrl = `${url}/albums`;
+        const settings = {
+            type: 'GET',
+            async: false,
+            success: data => {
+                albums = [...data];
+            },
+            error: err => {
+                console.log('Ajax error');
+            },
+        };
+
+        $.ajax(currentUrl, settings);
+        return albums;
+    };
+
+    const getPhotosByAlbumId = albumId => {
+        let photos = {};
+        const currentUrl = `${url}/photos?albumId=${albumId}`;
+        const settings = {
+            type: 'GET',
+            async: false,
+            success: data => {
+                photos = [...data];
+            },
+            error: err => {
+                console.log('Ajax error');
+            },
+        };
+
+        $.ajax(currentUrl, settings);
+        return photos;
+    };
+
+    const getAlbumsByUserId = userId => {
+        let albums = {};
+        const currentUrl = `${url}/albums?userId=${userId}`;
+        const settings = {
+            type: 'GET',
+            async: false,
+            success: data => {
+                albums = [...data];
+            },
+            error: err => {
+                console.log('Ajax error');
+            },
+        };
+
+        $.ajax(currentUrl, settings);
+        return albums;
+    };
+
     const getPostById = postId => {
         let post = {};
         const currentUrl = `${url}/posts?id=${postId}`;
@@ -152,6 +206,37 @@
         });
     };
 
+    const albumPhotosRender = (albumId, photos) => {
+        const albumDiv = $(`[data-photos-album-id=${albumId}]`);
+        albumDiv.html('');
+        photos.forEach(photo => {
+            const photoUrl = photo.thumbnailUrl.split('/');
+            if (photoUrl[photoUrl.length - 1].length === 6) {
+                albumDiv.append(`
+                    <img src="${photo.thumbnailUrl}">
+                `);
+            }
+        });
+    };
+
+    const userAlbumsRender = (user, allAlbums) => {
+        $content.append(`
+                <div class="card userAlbumCard" id="userAlbumsCard-${user.id}">
+                    <h2><a data-user-id="${user.id}" class="user-info" href="#">${user.name}'s</a> albums</h2>
+                </div>
+                `);
+        allAlbums.forEach(album => {
+            if (album.userId === user.id) {
+                $(`#userAlbumsCard-${user.id}`).append(`
+                    <h3>
+                        <a href="#" class="album-link" data-album-id="${album.id}">${album.title}</a>
+                    </h3>
+                        <div data-photos-album-id="${album.id}" class="hide"></div>
+                `);
+            }
+        });
+    };
+
     const userPostsRender = (user, posts) => {
         $content.append(`
                 <div class="card userPostsCard" id="userPostsCard-${user.id}">
@@ -170,7 +255,6 @@
                     <div data-comment-post-id="${post.id}"></div>
                     <hr>
                 </div>
-                
             `);
         });
     };
@@ -191,7 +275,6 @@
                 <h3>Street: ${user.address.street}</h3>
                 <h3>Suite: ${user.address.suite}</h3>
                 <h3>Zipcode: ${user.address.zipcode}</h3>
-<!--                <h2>Todo list</h2>-->
             </div>
         `);
     };
@@ -220,22 +303,36 @@
         e.target.classList.add('active');
     });
 
-    $('#allUsers').on('click', e => {
-        $content.html('<h2>Users loading...</h2>');
-        cleanContent();
-        allUsersRender(getAllUsers());
+    $('#menu').on('click', e => {
+        if (e.target.classList.contains('allUsers')) {
+            $content.html('<h2>Users loading...</h2>');
+            cleanContent();
+            allUsersRender(getAllUsers());
+        };
+
+        if (e.target.classList.contains('allPosts')) {
+            $content.html('<h2>Posts loading...</h2>');
+            cleanContent();
+            const users = getAllUsers();
+
+            users.forEach(user => {
+                const posts = getPostListByUserId(user.id);
+                userPostsRender(user, posts);
+            });
+        };
+
+        if (e.target.classList.contains('allAlbums')) {
+            $content.html('<h2>Albums loading...</h2>');
+            cleanContent();
+            const users = getAllUsers();
+
+            users.forEach(user => {
+                const allAlbums = getAllAlbums();
+                userAlbumsRender(user, allAlbums);
+            });
+        };
     });
 
-    $('#allPosts').on('click', e => {
-        $content.html('<h2>Posts loading...</h2>');
-        cleanContent();
-        const users = getAllUsers();
-
-        users.forEach(user => {
-            const posts = getPostListByUserId(user.id);
-            userPostsRender(user, posts);
-        });
-    });
 
     $content.on('click', e => {
         if (e.target.classList.contains('posts')) {
@@ -262,6 +359,14 @@
             cleanContent();
             userInfoRender(getUserInfo(id));
             userTodoListRender(getUserTodoList(id));
+        }
+
+        if (e.target.classList.contains('album-link')) {
+            e.preventDefault();
+            const albumId = e.target.dataset.albumId;
+            const photos = getPhotosByAlbumId(albumId);
+            $(`[data-photos-album-id=${albumId}]`).toggleClass('hide');
+            albumPhotosRender(albumId, photos);
         }
     });
 

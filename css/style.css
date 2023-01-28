@@ -115,7 +115,8 @@ ul
 
 .card.userPostsCard,
 .card.userInfo,
-.card.todoList {
+.card.todoList,
+.card.userAlbumCard {
     width: 90%;
 }
 
